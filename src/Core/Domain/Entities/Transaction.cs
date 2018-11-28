@@ -17,5 +17,9 @@ namespace Domain
         public Investor Investor { get; set; }
         public SalesPerson SalesPerson { get; set; }
 
+        public double TransactionTotal {
+            get => (double)this.PricePerShare * this.NumberOfShares;
+        }
+
     }
 }

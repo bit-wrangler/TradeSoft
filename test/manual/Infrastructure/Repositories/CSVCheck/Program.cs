@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CSVTransactionRepository;
 
 namespace CSVCheck
@@ -9,11 +10,15 @@ namespace CSVCheck
         {
             const string filePath = "Data.csv";
             var repo = new TransactionRepository(filePath);
-            foreach (var t in repo.GetAll())
+            var grouped = repo.GetAll().GroupBy(t => t.SalesPerson.Name);
+            System.Console.WriteLine(grouped.Count());
+            foreach (var group in grouped)
             {
-                System.Console.WriteLine(
-                    $"{t.Date}, {t.Type}, {t.NumberOfShares}, {t.PricePerShare}, {t.Fund.Name} "
-                );
+                System.Console.WriteLine(group.Key);
+                foreach (var item in group.ToList())
+                {
+                    System.Console.WriteLine(item.Date);
+                }
             }
         }
     }
