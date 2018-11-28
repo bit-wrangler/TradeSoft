@@ -11,8 +11,8 @@ namespace Domain
         }
         public DateTime Date { get; set; }
         public TransactionType Type { get; set; }
-        public int NumberOfShares { get; set; }
-        public decimal Price { get; set; }
+        public double NumberOfShares { get; set; }
+        public decimal PricePerShare { get; set; }
         public Fund Fund { get; set; }
         public Investor Investor { get; set; }
         public SalesPerson SalesPerson { get; set; }
