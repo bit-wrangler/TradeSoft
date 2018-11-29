@@ -10,7 +10,7 @@ using Application.Models;
 
 namespace Tests
 {
-    public class TestRepo : ITransactionRepository
+    public class TestRepoSalesSummaryAndAUMS : ITransactionRepository
     {
         public static readonly SalesPerson SalesPerson = new SalesPerson{Name = "salesPerson"};
         public static readonly double BuyTransactionSum = (double)1m * 10.0 + (double)1m * 10.0;
@@ -51,6 +51,58 @@ namespace Tests
 
     }
 
+    public class TestRepoBreakReport : ITransactionRepository
+    {
+        public static readonly SalesPerson SalesPerson = new SalesPerson{Name = "salesPerson"};
+        public static readonly Investor Investor = new Investor{Name = "investor"};
+        public static readonly Fund BalancedFund = new Fund{Name = "balancedFund"};
+        public static readonly Fund ImbalancedFund = new Fund{Name = "imbalancedFund"};
+        public static readonly double ShareImbalance = 10.0 - 10.0 - 10.0;
+        private static readonly List<Transaction> dataSet = new List<Transaction>{
+            new Transaction{
+                Date = new DateTime(2018,1,1),
+                Fund = ImbalancedFund,
+                Investor = Investor,
+                NumberOfShares = 10,
+                PricePerShare = 1,
+                SalesPerson = SalesPerson,
+                Type = Transaction.TransactionType.BUY
+            },
+            new Transaction{
+                Date = new DateTime(2018,1,1),
+                Fund = ImbalancedFund,
+                Investor = Investor,
+                NumberOfShares = 10,
+                PricePerShare = 1,
+                SalesPerson = SalesPerson,
+                Type = Transaction.TransactionType.SELL
+            },
+            new Transaction{
+                Date = new DateTime(2018,1,1),
+                Fund = ImbalancedFund,
+                Investor = Investor,
+                NumberOfShares = 10,
+                PricePerShare = 1,
+                SalesPerson = SalesPerson,
+                Type = Transaction.TransactionType.SELL
+            },
+            new Transaction{
+                Date = new DateTime(2018,1,1),
+                Fund = BalancedFund,
+                Investor = Investor,
+                NumberOfShares = 10,
+                PricePerShare = 1,
+                SalesPerson = SalesPerson,
+                Type = Transaction.TransactionType.BUY
+            },
+        };
+        public List<Transaction> GetAll()
+        {
+            return dataSet;
+        }
+
+    }
+
     [TestFixture]
     public class TransactionReporterTests
     {
@@ -62,7 +114,7 @@ namespace Tests
         [Test]
         public void CheckSingleSalesPersonSummaryWithNoTransactionsInDateRange()
         {
-            var repo = new TestRepo();
+            var repo = new TestRepoSalesSummaryAndAUMS();
             var reporter = new TransactionReporter(repo);
             Assert.AreEqual(
                 new List<SalesPersonSalesSummary>(),
@@ -73,16 +125,16 @@ namespace Tests
         [Test]
         public void CheckSingleSalesPersonSummarySameMonth()
         {
-            var repo = new TestRepo();
+            var repo = new TestRepoSalesSummaryAndAUMS();
             var reporter = new TransactionReporter(repo);
             Assert.AreEqual(new List<SalesPersonSalesSummary>{
             new SalesPersonSalesSummary
             {
-                SalesPerson = TestRepo.SalesPerson,
-                InceptionToDate = TestRepo.BuyTransactionSum,
-                MonthToDate = TestRepo.BuyTransactionSum,
-                QuarterToDate = TestRepo.BuyTransactionSum,
-                YearToDate = TestRepo.BuyTransactionSum,
+                SalesPerson = TestRepoSalesSummaryAndAUMS.SalesPerson,
+                InceptionToDate = TestRepoSalesSummaryAndAUMS.BuyTransactionSum,
+                MonthToDate = TestRepoSalesSummaryAndAUMS.BuyTransactionSum,
+                QuarterToDate = TestRepoSalesSummaryAndAUMS.BuyTransactionSum,
+                YearToDate = TestRepoSalesSummaryAndAUMS.BuyTransactionSum,
             }
             }, reporter.SalesSummary(new DateTime(2018,1,1)));
         }
@@ -90,16 +142,16 @@ namespace Tests
         [Test]
         public void CheckSingleSalesPersonSummaryLastMonth()
         {
-            var repo = new TestRepo();
+            var repo = new TestRepoSalesSummaryAndAUMS();
             var reporter = new TransactionReporter(repo);
             Assert.AreEqual(new List<SalesPersonSalesSummary>{
             new SalesPersonSalesSummary
             {
-                SalesPerson = TestRepo.SalesPerson,
-                InceptionToDate = TestRepo.BuyTransactionSum,
+                SalesPerson = TestRepoSalesSummaryAndAUMS.SalesPerson,
+                InceptionToDate = TestRepoSalesSummaryAndAUMS.BuyTransactionSum,
                 MonthToDate = 0,
-                QuarterToDate = TestRepo.BuyTransactionSum,
-                YearToDate = TestRepo.BuyTransactionSum,
+                QuarterToDate = TestRepoSalesSummaryAndAUMS.BuyTransactionSum,
+                YearToDate = TestRepoSalesSummaryAndAUMS.BuyTransactionSum,
             }
             }, reporter.SalesSummary(new DateTime(2018,2,1)));
         }
@@ -107,16 +159,16 @@ namespace Tests
         [Test]
         public void CheckSingleSalesPersonSummaryLastQuarter()
         {
-            var repo = new TestRepo();
+            var repo = new TestRepoSalesSummaryAndAUMS();
             var reporter = new TransactionReporter(repo);
             Assert.AreEqual(new List<SalesPersonSalesSummary>{
             new SalesPersonSalesSummary
             {
-                SalesPerson = TestRepo.SalesPerson,
-                InceptionToDate = TestRepo.BuyTransactionSum,
+                SalesPerson = TestRepoSalesSummaryAndAUMS.SalesPerson,
+                InceptionToDate = TestRepoSalesSummaryAndAUMS.BuyTransactionSum,
                 MonthToDate = 0,
                 QuarterToDate = 0,
-                YearToDate = TestRepo.BuyTransactionSum,
+                YearToDate = TestRepoSalesSummaryAndAUMS.BuyTransactionSum,
             }
             }, reporter.SalesSummary(new DateTime(2018,4,1)));
         }
@@ -124,13 +176,13 @@ namespace Tests
         [Test]
         public void CheckSingleSalesPersonSummaryLastYear()
         {
-            var repo = new TestRepo();
+            var repo = new TestRepoSalesSummaryAndAUMS();
             var reporter = new TransactionReporter(repo);
             Assert.AreEqual(new List<SalesPersonSalesSummary>{
             new SalesPersonSalesSummary
             {
-                SalesPerson = TestRepo.SalesPerson,
-                InceptionToDate = TestRepo.BuyTransactionSum,
+                SalesPerson = TestRepoSalesSummaryAndAUMS.SalesPerson,
+                InceptionToDate = TestRepoSalesSummaryAndAUMS.BuyTransactionSum,
                 MonthToDate = 0,
                 QuarterToDate = 0,
                 YearToDate = 0,
@@ -141,13 +193,13 @@ namespace Tests
         [Test]
         public void CheckSingleSalesPersonAUMSummary()
         {
-            var repo = new TestRepo();
+            var repo = new TestRepoSalesSummaryAndAUMS();
             var reporter = new TransactionReporter(repo);
             Assert.AreEqual(new List<SalesPersonAUMSummary>{
             new SalesPersonAUMSummary
             {
-                SalesPerson = TestRepo.SalesPerson,
-                Amount = TestRepo.NetTransactionSum
+                SalesPerson = TestRepoSalesSummaryAndAUMS.SalesPerson,
+                Amount = TestRepoSalesSummaryAndAUMS.NetTransactionSum
             }
             }, reporter.AssetsUnderManagementSummary(new DateTime(2018,1,1)));
         }
@@ -155,11 +207,39 @@ namespace Tests
         [Test]
         public void CheckSingleSalesPersonAUMSummaryWithNoTransactionsInDateRange()
         {
-            var repo = new TestRepo();
+            var repo = new TestRepoSalesSummaryAndAUMS();
             var reporter = new TransactionReporter(repo);
             Assert.AreEqual(
                 new List<SalesPersonAUMSummary>(),
                 reporter.AssetsUnderManagementSummary(new DateTime(2017,1,1))
+            );
+        }
+
+        [Test]
+        public void CheckInvestorBreakReportWithNoTransactionsInDateRange()
+        {
+            var repo = new TestRepoBreakReport();
+            var reporter = new TransactionReporter(repo);
+            Assert.AreEqual(
+                new List<InvestorShareImbalance>(),
+                reporter.InvestorBreakReport(new DateTime(2017,1,1))
+            );
+        }
+
+        [Test]
+        public void CheckInvestorBreakReport()
+        {
+            var repo = new TestRepoBreakReport();
+            var reporter = new TransactionReporter(repo);
+            Assert.AreEqual(
+                new List<InvestorShareImbalance>{
+                    new InvestorShareImbalance{
+                        Fund = TestRepoBreakReport.ImbalancedFund,
+                        Investor = TestRepoBreakReport.Investor,
+                        ShareImbalance = -TestRepoBreakReport.ShareImbalance
+                    }
+                },
+                reporter.InvestorBreakReport(new DateTime(2019,1,1))
             );
         }
 

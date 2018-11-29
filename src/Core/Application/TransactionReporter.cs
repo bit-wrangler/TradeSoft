@@ -24,7 +24,8 @@ namespace Application
                 .Where(t => t.Type == Transaction.TransactionType.BUY)
                 .GroupBy(t => t.SalesPerson);
 
-            return buyTransactionsBySalesRep.Select(g => new SalesPersonSalesSummary{
+            return buyTransactionsBySalesRep.Select(g => new SalesPersonSalesSummary
+            {
                 SalesPerson = g.Key,
                 InceptionToDate = g.Sum(t => t.TransactionTotal),
                 MonthToDate = g.Where(t => t.Date >= ToDatePeriodUtility.StartOfMonth(endDate)).Sum(t => t.TransactionTotal),
@@ -39,10 +40,47 @@ namespace Application
                 .Where(t => t.Date <= endDate)
                 .GroupBy(t => t.SalesPerson);
 
-            return transactionsBySalesRep.Select(g => new SalesPersonAUMSummary{
+            return transactionsBySalesRep.Select(g => new SalesPersonAUMSummary
+            {
                 SalesPerson = g.Key,
                 Amount = g.Sum(t => t.TransactionTotal * ((t.Type == Transaction.TransactionType.BUY) ? 1 : -1))
             }).ToList();
+        }
+
+        public List<InvestorShareImbalance> InvestorBreakReport(DateTime endDate)
+        {
+            var transactionsByInvestor = this.transactionRepository.GetAll()
+                .Where(t => t.Date <= endDate)
+                .GroupBy(t => t.Investor);
+
+            // loop over each investor's set of transactions
+            // select many allows us to automatically concatenate the resulting lists
+            return transactionsByInvestor.SelectMany(
+                g =>
+                {
+                    var transactionsByFund = g.GroupBy(t => t.Fund);
+                    System.Console.WriteLine(g.Key.Name);
+                    // loop over each investor's set of transactions for each fund
+                    return transactionsByFund.Select(
+                        // for each set of transactions related to a particular, calculate the balance
+                        f =>
+                        {
+                            System.Console.WriteLine(f.Key.Name);
+                            return new
+                            {
+                                Fund = f.Key,
+                                Balance = f.Sum(t => t.NumberOfShares * ((t.Type == Transaction.TransactionType.BUY) ? 1 : -1))
+                            };
+                        }
+                    ).Where(b => b.Balance < 0) // keep only balances that are negative
+                    .Select(b => new InvestorShareImbalance
+                    {
+                        Investor = g.Key,
+                        Fund = b.Fund,
+                        ShareImbalance = -b.Balance
+                    }).ToList();
+                }
+            ).ToList();
         }
     }
 }
