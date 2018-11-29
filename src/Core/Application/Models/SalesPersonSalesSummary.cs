@@ -20,5 +20,10 @@ namespace Application.Models
                     this.QuarterToDate.Equals(other.QuarterToDate) &&
                     this.InceptionToDate.Equals(other.InceptionToDate);
         }
+
+        public override int GetHashCode()
+        {
+            return this.SalesPerson.GetHashCode() ^ this.InceptionToDate.GetHashCode();
+        }
     }
 }

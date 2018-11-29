@@ -13,7 +13,8 @@ namespace Tests
     public class TestRepo : ITransactionRepository
     {
         public static readonly SalesPerson SalesPerson = new SalesPerson{Name = "salesPerson"};
-        public static readonly double TransactionSum = (double)1m * 10.0 + (double)1m * 10.0;
+        public static readonly double BuyTransactionSum = (double)1m * 10.0 + (double)1m * 10.0;
+        public static readonly double NetTransactionSum = (double)1m * 10.0 + (double)1m * 10.0 - (double)1m * 10.0;
         private static readonly List<Transaction> dataSet = new List<Transaction>{
             new Transaction{
                 Date = new DateTime(2018,1,1),
@@ -32,6 +33,15 @@ namespace Tests
                 PricePerShare = 1,
                 SalesPerson = SalesPerson,
                 Type = Transaction.TransactionType.BUY
+            },
+            new Transaction{
+                Date = new DateTime(2018,1,1),
+                Fund = new Fund{Name = "fund"},
+                Investor = new Investor{Name = "investor"},
+                NumberOfShares = 10,
+                PricePerShare = 1,
+                SalesPerson = SalesPerson,
+                Type = Transaction.TransactionType.SELL
             }
         };
         public List<Transaction> GetAll()
@@ -50,6 +60,17 @@ namespace Tests
         }
 
         [Test]
+        public void CheckSingleSalesPersonSummaryWithNoTransactionsInDateRange()
+        {
+            var repo = new TestRepo();
+            var reporter = new TransactionReporter(repo);
+            Assert.AreEqual(
+                new List<SalesPersonSalesSummary>(),
+                reporter.SalesSummary(new DateTime(2017,12,31))
+            );
+        }
+
+        [Test]
         public void CheckSingleSalesPersonSummarySameMonth()
         {
             var repo = new TestRepo();
@@ -58,10 +79,10 @@ namespace Tests
             new SalesPersonSalesSummary
             {
                 SalesPerson = TestRepo.SalesPerson,
-                InceptionToDate = TestRepo.TransactionSum,
-                MonthToDate = TestRepo.TransactionSum,
-                QuarterToDate = TestRepo.TransactionSum,
-                YearToDate = TestRepo.TransactionSum,
+                InceptionToDate = TestRepo.BuyTransactionSum,
+                MonthToDate = TestRepo.BuyTransactionSum,
+                QuarterToDate = TestRepo.BuyTransactionSum,
+                YearToDate = TestRepo.BuyTransactionSum,
             }
             }, reporter.SalesSummary(new DateTime(2018,1,1)));
         }
@@ -75,10 +96,10 @@ namespace Tests
             new SalesPersonSalesSummary
             {
                 SalesPerson = TestRepo.SalesPerson,
-                InceptionToDate = TestRepo.TransactionSum,
+                InceptionToDate = TestRepo.BuyTransactionSum,
                 MonthToDate = 0,
-                QuarterToDate = TestRepo.TransactionSum,
-                YearToDate = TestRepo.TransactionSum,
+                QuarterToDate = TestRepo.BuyTransactionSum,
+                YearToDate = TestRepo.BuyTransactionSum,
             }
             }, reporter.SalesSummary(new DateTime(2018,2,1)));
         }
@@ -92,10 +113,10 @@ namespace Tests
             new SalesPersonSalesSummary
             {
                 SalesPerson = TestRepo.SalesPerson,
-                InceptionToDate = TestRepo.TransactionSum,
+                InceptionToDate = TestRepo.BuyTransactionSum,
                 MonthToDate = 0,
                 QuarterToDate = 0,
-                YearToDate = TestRepo.TransactionSum,
+                YearToDate = TestRepo.BuyTransactionSum,
             }
             }, reporter.SalesSummary(new DateTime(2018,4,1)));
         }
@@ -109,12 +130,37 @@ namespace Tests
             new SalesPersonSalesSummary
             {
                 SalesPerson = TestRepo.SalesPerson,
-                InceptionToDate = TestRepo.TransactionSum,
+                InceptionToDate = TestRepo.BuyTransactionSum,
                 MonthToDate = 0,
                 QuarterToDate = 0,
                 YearToDate = 0,
             }
             }, reporter.SalesSummary(new DateTime(2019,1,1)));
+        }
+
+        [Test]
+        public void CheckSingleSalesPersonAUMSummary()
+        {
+            var repo = new TestRepo();
+            var reporter = new TransactionReporter(repo);
+            Assert.AreEqual(new List<SalesPersonAUMSummary>{
+            new SalesPersonAUMSummary
+            {
+                SalesPerson = TestRepo.SalesPerson,
+                Amount = TestRepo.NetTransactionSum
+            }
+            }, reporter.AssetsUnderManagementSummary(new DateTime(2018,1,1)));
+        }
+
+        [Test]
+        public void CheckSingleSalesPersonAUMSummaryWithNoTransactionsInDateRange()
+        {
+            var repo = new TestRepo();
+            var reporter = new TransactionReporter(repo);
+            Assert.AreEqual(
+                new List<SalesPersonAUMSummary>(),
+                reporter.AssetsUnderManagementSummary(new DateTime(2017,1,1))
+            );
         }
 
     }
