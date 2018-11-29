@@ -43,18 +43,4 @@ namespace Application.Models
             return nSharesToConsume * (sellPrice - buyPrice);
         }
     }
-    public class InvestorFundSummary
-    {
-        public Investor Investor { get; set; }
-        public Fund Fund { get; set; }
-        public List<Transaction> Purchases { get; set; }
-        public List<Transaction> Sales { get; set; }
-
-        public InvestorFundSummary()
-        {
-            this.Purchases = new List<Transaction>();
-            this.Sales = new List<Transaction>();
-        }
-
-    }
 }

@@ -83,31 +83,28 @@ namespace Application
             ).ToList();
         }
 
-        // public List<InvestorProfit> InvestorProfitReport(DateTime endDate)
-        // {
-        //     // to calculate profits we first need to find cases where
-        //     // shares are sold, then calculate profit based on FIFO approach
-        //     var transactionsByInvestor = this.transactionRepository.GetAll()
-        //         .OrderBy(t => t.Date)
-        //         .Where(t => t.Date <= endDate)
-        //         .GroupBy(t => t.Investor);
+        public List<InvestorProfit> InvestorProfitReport(DateTime endDate)
+        {
+            // to calculate profits we first need to find cases where
+            // shares are sold, then calculate profit based on a FIFO approach
+            var transactionsByInvestor = this.transactionRepository.GetAll()
+                .OrderBy(t => t.Date)
+                .Where(t => t.Date <= endDate)
+                .GroupBy(t => t.Investor);
 
-        //     var investorFundSummaries = transactionsByInvestor.SelectMany(i => {
-        //         var transactionsByFund = i.GroupBy(t => t.Fund);
+            return transactionsByInvestor.SelectMany(i => {
+                var transactionsByFund = i.GroupBy(t => t.Fund);
 
-        //         return transactionsByFund.Select(f =>  new InvestorFundSummary{
-        //                 Investor = i.Key,
-        //                 Fund = f.Key,
-        //                 Purchases = new Queue<Transaction>(f.Where(t => t.Type == Transaction.TransactionType.BUY)),
-        //                 Sales = new Queue<Transaction>(f.Where(t => t.Type == Transaction.TransactionType.SELL))
-        //             }
-        //         ).Where(s => s.Sales.Count > 0);
-        //     }).ToList();
-
-        //     foreach (var summary in investorFundSummaries)
-        //     {
-                
-        //     }
-        // }
+                return transactionsByFund.Select(f =>  new InvestorProfit{
+                        Investor = i.Key,
+                        Fund = f.Key,
+                        Profit = new FIFOProfitCalculator(
+                            f.Where(t => t.Type == Transaction.TransactionType.BUY).ToList(),
+                            f.Where(t => t.Type == Transaction.TransactionType.SELL).ToList()
+                        ).Profit
+                    }
+                );
+            }).ToList();
+        }
     }
 }
