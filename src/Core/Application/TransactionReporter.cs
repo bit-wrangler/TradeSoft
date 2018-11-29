@@ -59,13 +59,11 @@ namespace Application
                 g =>
                 {
                     var transactionsByFund = g.GroupBy(t => t.Fund);
-                    System.Console.WriteLine(g.Key.Name);
                     // loop over each investor's set of transactions for each fund
                     return transactionsByFund.Select(
                         // for each set of transactions related to a particular, calculate the balance
                         f =>
                         {
-                            System.Console.WriteLine(f.Key.Name);
                             return new
                             {
                                 Fund = f.Key,
