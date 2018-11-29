@@ -146,8 +146,7 @@ namespace Tests
         public static readonly SalesPerson SalesPerson = new SalesPerson{Name = "salesPerson"};
         public static readonly Investor Investor = new Investor{Name = "investor"};
         public static readonly Fund Fund = new Fund{Name = "fund"};
-        public static readonly double NetProfit = (double)1.5m * 10.0 - (double)2m * 10.0;
-        public static readonly double ShareImbalance = 10.0 - 10.0 - 10.0;
+        public static readonly double NetProfit = (double)1.5m * 9.5 - (double)2m * 9.5;
         private static readonly List<Transaction> dataSet = new List<Transaction>{
             new Transaction{
                 Date = new DateTime(2018,1,1),
@@ -162,7 +161,7 @@ namespace Tests
                 Date = new DateTime(2018,1,1),
                 Fund = Fund,
                 Investor = Investor,
-                NumberOfShares = 10,
+                NumberOfShares = 9.5,
                 PricePerShare = 1.5m,
                 SalesPerson = SalesPerson,
                 Type = Transaction.TransactionType.SELL
@@ -365,6 +364,7 @@ namespace Tests
         {
             var repo = new TestRepoNegativeProfitReport();
             var reporter = new TransactionReporter(repo);
+            var report = reporter.InvestorProfitReport(new DateTime(2019,1,1));
             Assert.AreEqual(
                 new List<InvestorProfit>{
                     new InvestorProfit{
@@ -373,7 +373,7 @@ namespace Tests
                         Profit = TestRepoNegativeProfitReport.NetProfit
                     }
                 },
-                reporter.InvestorProfitReport(new DateTime(2019,1,1))
+                report
             );
         }
 
