@@ -13,13 +13,16 @@ namespace Tests
     public class TestRepoSalesSummaryAndAUMS : ITransactionRepository
     {
         public static readonly SalesPerson SalesPerson = new SalesPerson{Name = "salesPerson"};
+        public static readonly Investor Investor = new Investor{Name = "investor"};
+        public static readonly Fund Fund = new Fund{Name = "fund"};
+        public static readonly double NetProfit = (double)1m * 10.0 - (double)1m * 10.0;
         public static readonly double BuyTransactionSum = (double)1m * 10.0 + (double)1m * 10.0;
         public static readonly double NetTransactionSum = (double)1m * 10.0 + (double)1m * 10.0 - (double)1m * 10.0;
         private static readonly List<Transaction> dataSet = new List<Transaction>{
             new Transaction{
                 Date = new DateTime(2018,1,1),
-                Fund = new Fund{Name = "fund"},
-                Investor = new Investor{Name = "investor"},
+                Fund = Fund,
+                Investor = Investor,
                 NumberOfShares = 10,
                 PricePerShare = 1,
                 SalesPerson = SalesPerson,
@@ -27,8 +30,8 @@ namespace Tests
             },
             new Transaction{
                 Date = new DateTime(2018,1,1),
-                Fund = new Fund{Name = "fund"},
-                Investor = new Investor{Name = "investor"},
+                Fund = Fund,
+                Investor = Investor,
                 NumberOfShares = 10,
                 PricePerShare = 1,
                 SalesPerson = SalesPerson,
@@ -36,8 +39,8 @@ namespace Tests
             },
             new Transaction{
                 Date = new DateTime(2018,1,1),
-                Fund = new Fund{Name = "fund"},
-                Investor = new Investor{Name = "investor"},
+                Fund = Fund,
+                Investor = Investor,
                 NumberOfShares = 10,
                 PricePerShare = 1,
                 SalesPerson = SalesPerson,
@@ -57,6 +60,7 @@ namespace Tests
         public static readonly Investor Investor = new Investor{Name = "investor"};
         public static readonly Fund BalancedFund = new Fund{Name = "balancedFund"};
         public static readonly Fund ImbalancedFund = new Fund{Name = "imbalancedFund"};
+        public static readonly double NetProfit = (double)1m * 10.0 - (double)1m * 10.0;
         public static readonly double ShareImbalance = 10.0 - 10.0 - 10.0;
         private static readonly List<Transaction> dataSet = new List<Transaction>{
             new Transaction{
@@ -95,6 +99,74 @@ namespace Tests
                 SalesPerson = SalesPerson,
                 Type = Transaction.TransactionType.BUY
             },
+        };
+        public List<Transaction> GetAll()
+        {
+            return dataSet;
+        }
+
+    }
+
+    public class TestRepoPositiveProfitReport : ITransactionRepository
+    {
+        public static readonly SalesPerson SalesPerson = new SalesPerson{Name = "salesPerson"};
+        public static readonly Investor Investor = new Investor{Name = "investor"};
+        public static readonly Fund Fund = new Fund{Name = "fund"};
+        public static readonly double NetProfit = (double)1.5m * 10.0 - (double)1m * 10.0;
+        public static readonly double ShareImbalance = 10.0 - 10.0 - 10.0;
+        private static readonly List<Transaction> dataSet = new List<Transaction>{
+            new Transaction{
+                Date = new DateTime(2018,1,1),
+                Fund = Fund,
+                Investor = Investor,
+                NumberOfShares = 10,
+                PricePerShare = 1,
+                SalesPerson = SalesPerson,
+                Type = Transaction.TransactionType.BUY
+            },
+            new Transaction{
+                Date = new DateTime(2018,1,1),
+                Fund = Fund,
+                Investor = Investor,
+                NumberOfShares = 10,
+                PricePerShare = 1.5m,
+                SalesPerson = SalesPerson,
+                Type = Transaction.TransactionType.SELL
+            }
+        };
+        public List<Transaction> GetAll()
+        {
+            return dataSet;
+        }
+
+    }
+
+    public class TestRepoNegativeProfitReport : ITransactionRepository
+    {
+        public static readonly SalesPerson SalesPerson = new SalesPerson{Name = "salesPerson"};
+        public static readonly Investor Investor = new Investor{Name = "investor"};
+        public static readonly Fund Fund = new Fund{Name = "fund"};
+        public static readonly double NetProfit = (double)1.5m * 10.0 - (double)2m * 10.0;
+        public static readonly double ShareImbalance = 10.0 - 10.0 - 10.0;
+        private static readonly List<Transaction> dataSet = new List<Transaction>{
+            new Transaction{
+                Date = new DateTime(2018,1,1),
+                Fund = Fund,
+                Investor = Investor,
+                NumberOfShares = 10,
+                PricePerShare = 2,
+                SalesPerson = SalesPerson,
+                Type = Transaction.TransactionType.BUY
+            },
+            new Transaction{
+                Date = new DateTime(2018,1,1),
+                Fund = Fund,
+                Investor = Investor,
+                NumberOfShares = 10,
+                PricePerShare = 1.5m,
+                SalesPerson = SalesPerson,
+                Type = Transaction.TransactionType.SELL
+            }
         };
         public List<Transaction> GetAll()
         {
@@ -240,6 +312,68 @@ namespace Tests
                     }
                 },
                 reporter.InvestorBreakReport(new DateTime(2019,1,1))
+            );
+        }
+
+        [Test]
+        public void CheckInvestorProfitReportWithNoTransactionsInDateRange()
+        {
+            var repo = new TestRepoSalesSummaryAndAUMS();
+            var reporter = new TransactionReporter(repo);
+            Assert.AreEqual(
+                new List<InvestorProfit>(),
+                reporter.InvestorProfitReport(new DateTime(2017,1,1))
+            );
+        }
+
+        [Test]
+        public void CheckInvestorProfitReportWithNoProfit()
+        {
+            var repo = new TestRepoSalesSummaryAndAUMS();
+            var reporter = new TransactionReporter(repo);
+            Assert.AreEqual(
+                new List<InvestorProfit>{
+                    new InvestorProfit{
+                        Investor = TestRepoSalesSummaryAndAUMS.Investor,
+                        Fund = TestRepoSalesSummaryAndAUMS.Fund,
+                        Profit = TestRepoSalesSummaryAndAUMS.NetProfit
+                    }
+                },
+                reporter.InvestorProfitReport(new DateTime(2019,1,1))
+            );
+        }
+
+        [Test]
+        public void CheckInvestorProfitReportWithProfit()
+        {
+            var repo = new TestRepoPositiveProfitReport();
+            var reporter = new TransactionReporter(repo);
+            Assert.AreEqual(
+                new List<InvestorProfit>{
+                    new InvestorProfit{
+                        Investor = TestRepoPositiveProfitReport.Investor,
+                        Fund = TestRepoPositiveProfitReport.Fund,
+                        Profit = TestRepoPositiveProfitReport.NetProfit
+                    }
+                },
+                reporter.InvestorProfitReport(new DateTime(2019,1,1))
+            );
+        }
+
+        [Test]
+        public void CheckInvestorProfitReportWithLoss()
+        {
+            var repo = new TestRepoNegativeProfitReport();
+            var reporter = new TransactionReporter(repo);
+            Assert.AreEqual(
+                new List<InvestorProfit>{
+                    new InvestorProfit{
+                        Investor = TestRepoNegativeProfitReport.Investor,
+                        Fund = TestRepoNegativeProfitReport.Fund,
+                        Profit = TestRepoNegativeProfitReport.NetProfit
+                    }
+                },
+                reporter.InvestorProfitReport(new DateTime(2019,1,1))
             );
         }
 
