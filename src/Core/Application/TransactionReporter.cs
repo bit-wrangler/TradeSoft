@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Application.Models;
+using Application.Utilities;
 using Domain;
 using Domain.Repositories;
 
@@ -14,19 +17,19 @@ namespace Application
             this.transactionRepository = transactionRepository;
         }
 
-        public void SalesSummary()
+        public List<SalesPersonSalesSummary> SalesSummary(DateTime endDate)
         {
-            var today = DateTime.Now.Date;
-            
             var buyTransactions = this.transactionRepository.GetAllWhere(t => t.Type == Transaction.TransactionType.BUY);
             var groupedBySalesRep = buyTransactions.GroupBy(t => t.SalesPerson.Name);
-            foreach (var group in groupedBySalesRep)
-            {
-                group.Sum(t => t.TransactionTotal);
-                group.Where(t => t.Date >= today - TimeSpan.FromDays(365)).Sum(t => t.TransactionTotal);
-                group.Where(t => t.Date >= today - TimeSpan.FromDays(30)).Sum(t => t.TransactionTotal);
-                group.Where(t => t.Date >= today - TimeSpan.FromDays(90)).Sum(t => t.TransactionTotal);
-            }
+            var report = new List<SalesPersonSalesSummary>();
+
+            return groupedBySalesRep.Select(g => new SalesPersonSalesSummary{
+                SalesPerson = g.First().SalesPerson,
+                InceptionToDate = g.Sum(t => t.TransactionTotal),
+                MonthToDate = g.Where(t => t.Date >= ToDatePeriodUtility.StartOfMonth(endDate)).Sum(t => t.TransactionTotal),
+                QuarterToDate = g.Where(t => t.Date >= ToDatePeriodUtility.StartOfQuarter(endDate)).Sum(t => t.TransactionTotal),
+                YearToDate = g.Where(t => t.Date >= ToDatePeriodUtility.StartOfYear(endDate)).Sum(t => t.TransactionTotal)
+            }).ToList();
         }
     }
 }
