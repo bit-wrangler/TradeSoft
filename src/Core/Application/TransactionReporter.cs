@@ -19,7 +19,7 @@ namespace Application
 
         public List<SalesPersonSalesSummary> SalesSummary(DateTime endDate)
         {
-            var buyTransactions = this.transactionRepository.GetAllWhere(t => t.Type == Transaction.TransactionType.BUY);
+            var buyTransactions = this.transactionRepository.GetAll().Where(t => t.Type == Transaction.TransactionType.BUY);
             var groupedBySalesRep = buyTransactions.GroupBy(t => t.SalesPerson.Name);
             var report = new List<SalesPersonSalesSummary>();
 

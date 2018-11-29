@@ -7,6 +7,5 @@ namespace Domain.Repositories
     public interface ITransactionRepository
     {
         List<Transaction> GetAll();
-        List<Transaction> GetAllWhere(Func<Transaction,bool> filter);
     }
 }
