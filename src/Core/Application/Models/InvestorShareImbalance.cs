@@ -2,7 +2,7 @@ using Domain;
 
 namespace Application.Models
 {
-    public class InvestorBreakReport
+    public class InvestorShareImbalance
     {
         public Investor Investor { get; set; }
         public Fund Fund { get; set; }
@@ -10,7 +10,7 @@ namespace Application.Models
 
         public override bool Equals(object obj)
         {
-            var other = obj as InvestorBreakReport;
+            var other = obj as InvestorShareImbalance;
             if (other == null) return false;
             return this.Investor.Equals(other.Investor) &&
                     this.Fund.Equals(other.Fund) &&
